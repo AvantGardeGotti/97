@@ -8,6 +8,12 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: #fff;
+            color: #000;
+        }
+        body.night-mode {
+            background-color: #121212;
+            color: #fff;
         }
         label, textarea, button {
             font-size: 16px;
@@ -25,23 +31,34 @@
             white-space: pre-wrap;
             background-color: #f9f9f9;
         }
+        body.night-mode #output {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        button {
+            padding: 5px 10px;
+        }
     </style>
 </head>
 <body>
 
+    <button onclick="toggleNightMode()">Ночная тема</button>
     <textarea id="inputText"></textarea>
-
     <br>
     <button onclick="convert()">Конвертировать</button>
 
     <div id="output"></div>
 
     <script>
-        // Алфавит и соответствующие числовые значения
+        // Алфавит и соответствующие числовые значения для маленьких и заглавных букв (с добавлением "ъ" и "ь")
         const alphabet = {
             'а': 10, 'б': 11, 'в': 12, 'г': 13, 'д': 14, 'е': 15, 'ё': 16, 'ж': 17, 'з': 18, 'и': 19,
             'й': 20, 'к': 21, 'л': 22, 'м': 23, 'н': 24, 'о': 25, 'п': 26, 'р': 27, 'с': 28, 'т': 29,
-            'у': 30, 'ф': 31, 'х': 32, 'ц': 33, 'ч': 34, 'ш': 35, 'щ': 36, 'ы': 37, 'э': 38, 'ю': 39, 'я': 40
+            'у': 30, 'ф': 31, 'х': 32, 'ц': 33, 'ч': 34, 'ш': 35, 'щ': 36, 'ъ': 37, 'ы': 38, 'ь': 39, 'э': 40, 'ю': 41, 'я': 42,
+            'А': 10, 'Б': 11, 'В': 12, 'Г': 13, 'Д': 14, 'Е': 15, 'Ё': 16, 'Ж': 17, 'З': 18, 'И': 19,
+            'Й': 20, 'К': 21, 'Л': 22, 'М': 23, 'Н': 24, 'О': 25, 'П': 26, 'Р': 27, 'С': 28, 'Т': 29,
+            'У': 30, 'Ф': 31, 'Х': 32, 'Ц': 33, 'Ч': 34, 'Ш': 35, 'Щ': 36, 'Ъ': 37, 'Ы': 38, 'Ь': 39, 'Э': 40, 'Ю': 41, 'Я': 42
         };
 
         const reverseAlphabet = Object.fromEntries(
@@ -50,7 +67,12 @@
 
         // Функция для конвертации текста в числа и чисел в текст
         function convert() {
-            const inputText = document.getElementById('inputText').value.trim();
+            let inputText = document.getElementById('inputText').value.trim();
+
+            // Убираем "01" в конце, если он есть
+            if (inputText.endsWith('01')) {
+                inputText = inputText.slice(0, -2);
+            }
 
             if (inputText.match(/^(\d+\s?)+$/)) {  // Если введены числа
                 convertNumbersToText(inputText);
@@ -77,6 +99,9 @@
                     punctuationIndexes.push(i);  // Сохраняем индекс знака
                     punctuationChars.push(char);  // Сохраняем сам знак
                     textWithoutPunctuation += ' '; // Заменяем знак пробелом
+                } else if (/\d/.test(char)) {  // Если это цифра, оставляем её
+                    output += char + ' ';
+                    textWithoutPunctuation += char;
                 } else {
                     textWithoutPunctuation += char; // Для пробела сохраняем сам пробел
                 }
@@ -92,6 +117,9 @@
                     finalOutput += output[i];
                 }
             }
+
+            // Добавляем "01" в конец
+            finalOutput += '01';
 
             document.getElementById('output').textContent = finalOutput.trim();
         }
@@ -110,11 +138,18 @@
                     output += reverseAlphabet[num];
                 } else if (num === 0) {
                     output += ' ';  // Пробел
+                } else if (/\d/.test(numberArray[i])) {  // Если это цифра, оставляем её
+                    output += numberArray[i] + ' ';
                 }
             }
 
-            // Вставляем знаки препинания, сохранённые в процессе раскодировки
+            // Не добавляем "01" в конце при декодировании чисел
             document.getElementById('output').textContent = output.split('').join(' ');
+        }
+
+        // Функция для переключения ночной темы
+        function toggleNightMode() {
+            document.body.classList.toggle('night-mode');
         }
     </script>
 
