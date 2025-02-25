@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конвертер</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label, textarea, button {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+    <textarea id="inputText"></textarea>
+
+    <br>
+    <button onclick="convert()">Конвертировать</button>
+
+    <div id="output"></div>
+
+    <script>
+        // Алфавит и соответствующие числовые значения
+        const alphabet = {
+            'а': 10, 'б': 11, 'в': 12, 'г': 13, 'д': 14, 'е': 15, 'ё': 16, 'ж': 17, 'з': 18, 'и': 19,
+            'й': 20, 'к': 21, 'л': 22, 'м': 23, 'н': 24, 'о': 25, 'п': 26, 'р': 27, 'с': 28, 'т': 29,
+            'у': 30, 'ф': 31, 'х': 32, 'ц': 33, 'ч': 34, 'ш': 35, 'щ': 36, 'ы': 37, 'э': 38, 'ю': 39, 'я': 40
+        };
+
+        const reverseAlphabet = Object.fromEntries(
+            Object.entries(alphabet).map(([key, value]) => [value, key])
+        );
+
+        // Функция для конвертации текста в числа и чисел в текст
+        function convert() {
+            const inputText = document.getElementById('inputText').value.trim();
+
+            if (inputText.match(/^(\d+\s?)+$/)) {  // Если введены числа
+                convertNumbersToText(inputText);
+            } else {  // Если введён текст
+                convertTextToNumbers(inputText);
+            }
+        }
+
+        // Функция конвертирования текста в числа (с сохранением знаков препинания на их местах)
+        function convertTextToNumbers(text) {
+            let output = '';
+            let punctuationIndexes = [];  // Массив для хранения индексов знаков препинания
+            let punctuationChars = [];  // Массив для хранения самих знаков препинания
+            let textWithoutPunctuation = ''; // Текст без знаков препинания
+
+            // Пройдём по всем символам в тексте
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+
+                if (alphabet[char]) {
+                    output += alphabet[char] + ' ';
+                    textWithoutPunctuation += char;
+                } else if (/[.,!?;:()'"-]/.test(char)) {  // Если это знак препинания
+                    punctuationIndexes.push(i);  // Сохраняем индекс знака
+                    punctuationChars.push(char);  // Сохраняем сам знак
+                    textWithoutPunctuation += ' '; // Заменяем знак пробелом
+                } else {
+                    textWithoutPunctuation += char; // Для пробела сохраняем сам пробел
+                }
+            }
+
+            // Восстановим знаки препинания в нужных местах
+            let finalOutput = '';
+            let punctuationIndex = 0;
+            for (let i = 0; i < output.length; i++) {
+                if (punctuationIndexes.includes(i)) {
+                    finalOutput += punctuationChars[punctuationIndex++];
+                } else {
+                    finalOutput += output[i];
+                }
+            }
+
+            document.getElementById('output').textContent = finalOutput.trim();
+        }
+
+        // Функция конвертирования чисел в текст (с восстановлением пробелов и знаков препинания)
+        function convertNumbersToText(numbers) {
+            let output = '';
+            const numberArray = numbers.split(/\s+/);
+            let punctuationIndex = 0;
+
+            // Проходим по числам и восстанавливаем текст
+            for (let i = 0; i < numberArray.length; i++) {
+                const num = parseInt(numberArray[i]);
+
+                if (reverseAlphabet[num]) {
+                    output += reverseAlphabet[num];
+                } else if (num === 0) {
+                    output += ' ';  // Пробел
+                }
+            }
+
+            // Вставляем знаки препинания, сохранённые в процессе раскодировки
+            document.getElementById('output').textContent = output.split('').join(' ');
+        }
+    </script>
+
+</body>
+</html>
